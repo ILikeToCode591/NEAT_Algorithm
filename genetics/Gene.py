@@ -5,7 +5,7 @@ class Gene:
     def __init__(self, *args : int):
         self.__innovation_num = args[0] if len(args) else None
 
-    def set_innovation_num(self, value):
+    def setInnovation_num(self, value):
         self.__innovation_num = value
 
     @property
@@ -45,13 +45,16 @@ class NodeGene(Gene):
 
 class ConnectorGene(Gene):
 
-    def __init__(self, *args):
+    def __init__(self, inp = None, out = None, weight = None, enable = True):
         super().__init__()
 
-        self.__input = args[0] if len(args) == 2 else None
-        self.__output = args[1] if len(args) == 2 else None
-        self.__weight = None
-        self.__enabled = True
+        if enable is None:
+            enable = True
+
+        self.__input = inp
+        self.__output = out
+        self.__weight = weight
+        self.__enabled = enable
 
     def setOut(self, obj):
         self.__output = obj
@@ -72,6 +75,14 @@ class ConnectorGene(Gene):
 
     def __hash__(self):
         return self.input * MAX_NODES + self.output
+
+    def __copy__(self):
+        copy = ConnectorGene(self.input, self.output)
+        copy.setEnabled(self.enabled)
+        copy.setWeight(self.weight)
+        copy.setInnovation_num(self.innovation_num)
+
+        return copy
 
     @property
     def output(self):
