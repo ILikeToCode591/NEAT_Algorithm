@@ -1,3 +1,3 @@
 import math
 
-MAX_NODES = math.pow(2, 20)
+MAX_NODES = int(math.pow(2, 20))

@@ -1,7 +1,7 @@
 from data_structs.IndexedSet import IndexedSet
-from genetics.Gene import NodeGene, ConnectorGene
 from genetics.Genome import Genome
-
+from genetics.NodeGene import NodeGene
+from genetics.ConnectorGene import ConnectorGene
 
 class NEAT:
 
@@ -10,15 +10,18 @@ class NEAT:
         self.__all_nodes = IndexedSet()
         self.__clients = IndexedSet()
 
+        self.__input_size = None
+        self.__ouput_size = None
+
         self.__C1, self.__C2, self.__C3 = 1, 1, 1
         self.__WEIGHT_RANDOM_STRENGTH = 0.5
         self.__WEIGHT_SHIFT_STRENGTH = 0.5
 
-        self.__PROBABILITY_MUTATE_NODE = 0.03
-        self.__PROBABILITY_MUTATE_CONNECTION = 0.06
-        self.__PROBABILITY_MUTATE_TOGGLE = 0.02
-        self.__PROBABILITY_MUTATE_RANDOMWEIGHT = 0.07
-        self.__PROBABILITY_MUTATE_SHIFTWEIGHT = 0.1
+        self.__PROBABILITY_MUTATE_NODE = 0.11
+        self.__PROBABILITY_MUTATE_CONNECTION = 0.16
+        self.__PROBABILITY_MUTATE_TOGGLE = 0.11
+        self.__PROBABILITY_MUTATE_RANDOMWEIGHT = 0.19
+        self.__PROBABILITY_MUTATE_SHIFTWEIGHT = 0.2
 
         self.reset(input_size, output_size, clients)
 
@@ -79,6 +82,9 @@ class NEAT:
         self.all_nodes.clear()
         self.clients.clear()
 
+        self.__input_size = input_size
+        self.__ouput_size = output_size
+
         for i in range(input_size):
             inp = self.getNode()
             inp.setX(0.1)
@@ -91,24 +97,28 @@ class NEAT:
     def createGenome(self):
 
         g = Genome(self)
-        g.nodes.extend(self.all_nodes)
+        g.set_input_nodes(self.__input_size)
+        g.set_output_nodes(self.__ouput_size)
+
+        for node in self.all_nodes:
+            g.nodes.add(node.copy())
 
         return g
 
-    def getConnector(self, inputNode=None, outputNode=None, weight = None, enabled = None):
+    def getConnector(self, inputNode=None, outputNode=None):
 
-        if inputNode is not None and outputNode is not None and isinstance(inputNode, NodeGene) and isinstance(
-                outputNode, NodeGene):
+        if isinstance(inputNode, NodeGene) and isinstance(outputNode, NodeGene):
 
             key = str(hash(inputNode)) + ' -> ' + str(hash(outputNode))
 
             if key in self.all_connections:
+                # print('already in connections')
                 return self.all_connections[key]
             else:
-                newCon = ConnectorGene(inputNode, outputNode, weight, enabled)
+                newCon = ConnectorGene(inputNode, outputNode)
                 newCon.setInnovation_num(len(self.all_connections.items()) + 1)
                 self.all_connections[key] = newCon
-                return newCon
+                return self.all_connections[key]
 
     def getNode(self, id: int = None):
         if id is None or id > len(self.all_nodes):
